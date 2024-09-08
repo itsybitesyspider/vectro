@@ -62,7 +62,7 @@ mod test {
     }
 
     #[test]
-    fn test_big() {
+    fn test_medium() {
         let big = [1,8,8,8,8,8,8,8,8,2,2,4,4,4,4,6,6,6,6,6,6,7,7,7,7,7,7,7,3,3,3,5,5,5,5,5];
         let iter = EncodeConsecutiveRuns::new(big.iter().copied());
         let result : Vec<_> = iter.collect();
@@ -70,11 +70,37 @@ mod test {
         assert_eq!(&result, &[(1,1),(8,8),(2,2),(4,4),(6,6),(7,7),(3,3),(5,5)]);
     }
 
+    #[test]
+    fn test_big() {
+        let big = vec![7;7000000];
+        let iter = EncodeConsecutiveRuns::new(big.iter().copied());
+        let result : Vec<_> = iter.collect();
+
+        assert_eq!(&result, &[(7,7000000)]);
+    }
+
     proptest! {
         #[test]
-        fn test_pack_unpack(original: Vec<u16>) {
+        fn test_pack_unpack_u16(original: Vec<u16>) {
+            // Because it's a u16, there will be very short runs (probably all 1-length)
             use super::super::DecodeConsecutiveRuns;
             let result : Vec<u16> = DecodeConsecutiveRuns::new(EncodeConsecutiveRuns::new(original.iter().copied())).collect();
+            assert_eq!(original,result);
+        }
+
+        #[test]
+        fn test_pack_unpack_u8(original: Vec<u8>) {
+            // Because it's a u8, runs will be short but more likely to have consecutive repeats
+            use super::super::DecodeConsecutiveRuns;
+            let result : Vec<u8> = DecodeConsecutiveRuns::new(EncodeConsecutiveRuns::new(original.iter().copied())).collect();
+            assert_eq!(original,result);
+        }
+
+        #[test]
+        fn test_pack_unpack_bool(original: Vec<bool>) {
+            // Because it's a bool, consecutive repeats are virtually guaranteed
+            use super::super::DecodeConsecutiveRuns;
+            let result : Vec<bool> = DecodeConsecutiveRuns::new(EncodeConsecutiveRuns::new(original.iter().copied())).collect();
             assert_eq!(original,result);
         }
     }

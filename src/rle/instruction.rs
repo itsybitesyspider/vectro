@@ -67,3 +67,8 @@ impl RleInstruction {
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+    
+}

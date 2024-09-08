@@ -38,3 +38,56 @@ where Iter:Iterator<Item=(Value,u128)>,
         result
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::DecodeConsecutiveRuns;
+
+    #[test]
+    fn test_empty() {
+        let empty: [(i32,u128);0] = [];
+        let iter = DecodeConsecutiveRuns::new(empty.iter().copied());
+        let result : Vec<_> = iter.collect();
+
+        assert_eq!(&result, &[]);
+    }
+
+    #[test]
+    fn test_single() {
+        let runs: [(i32,u128);1] = [(42,1)];
+        let iter = DecodeConsecutiveRuns::new(runs.iter().copied());
+        let result : Vec<_> = iter.collect();
+
+        assert_eq!(&result, &[42]);
+    }
+
+    #[test]
+    fn test_single_run() {
+        let runs: [(i32,u128);1] = [(42,12)];
+        let iter = DecodeConsecutiveRuns::new(runs.iter().copied());
+        let result : Vec<_> = iter.collect();
+
+        assert_eq!(&result, &[42,42,42,42,42,42,42,42,42,42,42,42]);
+    }
+
+    #[test]
+    fn test_twin_runs() {
+        let runs: [(i32,u128);2] = [(42,2),(7,10)];
+        let iter = DecodeConsecutiveRuns::new(runs.iter().copied());
+        let result : Vec<_> = iter.collect();
+
+        assert_eq!(&result, &[42,42,7,7,7,7,7,7,7,7,7,7]);
+    }
+
+    #[test]
+    fn test_extremely_large_run() {
+        let runs: [(i32,u128);3] = [(1,1),(2,7000000),(3,1)];
+        let mut iter = DecodeConsecutiveRuns::new(runs.iter().copied());
+
+        assert_eq!(iter.next(), Some(1));
+        for _ in 0_i64..7000000 {
+            assert_eq!(iter.next(), Some(2));
+        }
+        assert_eq!(iter.next(), Some(3));
+    }
+}
