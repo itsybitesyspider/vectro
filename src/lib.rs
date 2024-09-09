@@ -8,5 +8,9 @@
 
 //! Very large collections.
 
-/// Run Length Encoding
+/// Utilities for working with blocks of data.
+pub mod block;
+/// Run-length encoding.
 pub mod rle;
+/// Utilities for sorting.
+pub mod sort;

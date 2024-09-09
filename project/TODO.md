@@ -1,0 +1,13 @@
+- [ ] (1 day) Add unit tests to all modules
+- [ ] (1 day) Sorting pairs
+- [ ] (1 day) Vec as AlignedBlock
+- [ ] (1 day) Vec of AlignedBlocks as an AlignedBlock
+- [ ] (1 week) Bitsets, iterating over bitsets, union, intersection, difference, etc
+- [ ] (1 week) Fixed-size collection of blocks, with option to run-length encode
+- [ ] (1 week) Simple strategies to store/compress blocks
+- [ ] (1 month) Variable-size collections
+- [ ] (1 month) Sorting
+- [ ] (1 year) Indexing collections
+- [ ] (1 year) Advanced strategies to store/compress blocks
+- [ ] (1 year) Map/reducing collections
+- [ ] (1 year) Convolutional transforms of collections
