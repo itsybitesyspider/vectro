@@ -1,4 +1,4 @@
-use super::{aligned_block::{AlignedBlock, BlockGet}};
+use super::{aligned_block::{AlignedBlock, BlockGet}, BlockSet};
 
 /// An aligned block of booleans.
 pub struct AlignedBitfield<T>((T,T));
@@ -8,7 +8,7 @@ impl AlignedBlock for AlignedBitfield<usize> {
     type Item = bool;
 
     fn alignment() -> Self::Index {
-        std::mem::size_of::<Self::Index>()
+        8*std::mem::size_of::<Self::Index>()
     }
 
     fn position(&self) -> Self::Index {
@@ -21,7 +21,7 @@ impl AlignedBlock for AlignedBitfield<u64> {
     type Item = bool;
 
     fn alignment() -> Self::Index {
-        std::mem::size_of::<Self::Index>() as u64
+        8*std::mem::size_of::<Self::Index>() as u64
     }
 
     fn position(&self) -> Self::Index {
@@ -32,7 +32,7 @@ impl AlignedBlock for AlignedBitfield<u64> {
 impl BlockGet for AlignedBitfield<usize> {
     fn get(&self, index: Self::Index) -> bool {
         let index = index - self.0.position();
-        assert!(index < std::mem::size_of::<Self::Index>() as Self::Index);
+        assert!(index < 8*std::mem::size_of::<Self::Index>() as Self::Index);
         (self.0.get(self.0.position()) >> index) & 0x01 != 0
     }
 }
@@ -40,20 +40,44 @@ impl BlockGet for AlignedBitfield<usize> {
 impl BlockGet for AlignedBitfield<u64> {
     fn get(&self, index: Self::Index) -> bool {
         let index = index - self.0.position();
-        assert!(index < std::mem::size_of::<Self::Index>() as Self::Index);
+        assert!(index < 8*std::mem::size_of::<Self::Index>() as Self::Index);
         (self.0.get(self.0.position()) >> index) & 0x01 != 0
+    }
+}
+
+impl BlockSet for AlignedBitfield<usize> {
+    fn set(&mut self, index: Self::Index, item: Self::Item) {
+        let index = index - self.0.position();
+        assert!(index < 8*std::mem::size_of::<Self::Index>() as Self::Index);
+        if item {
+            self.0.set(self.0.position(), self.0.get(self.0.position()) | 0x01 << index);
+        } else {
+            self.0.set(self.0.position(), self.0.get(self.0.position()) & !(0x01 << index));
+        }
+    }
+}
+
+impl BlockSet for AlignedBitfield<u64> {
+    fn set(&mut self, index: Self::Index, item: Self::Item) {
+        let index = index - self.0.position();
+        assert!(index < 8*std::mem::size_of::<Self::Index>() as Self::Index);
+        if item {
+            self.0.set(self.0.position(), self.0.get(self.0.position()) | 0x01 << index);
+        } else {
+            self.0.set(self.0.position(), self.0.get(self.0.position()) & !(0x01 << index));
+        }
     }
 }
 
 #[cfg(test)]
 mod test {
-    use crate::block::{AlignedBlock, BlockGet};
+    use crate::block::{AlignedBlock, BlockGet, BlockSet};
 
     use super::AlignedBitfield;
 
     #[test]
     fn test_bitfield_usize() {
-        assert_eq!(AlignedBitfield::<usize>::alignment(),std::mem::size_of::<usize>());
+        assert_eq!(AlignedBitfield::<usize>::alignment(),8*std::mem::size_of::<usize>());
         
         let b = AlignedBitfield::<usize>((128,0));
         assert_eq!(b.position(), 128);
@@ -62,10 +86,54 @@ mod test {
 
     #[test]
     fn test_bitfield_u64() {
-        assert_eq!(AlignedBitfield::<u64>::alignment() as usize,std::mem::size_of::<u64>());
+        assert_eq!(AlignedBitfield::<u64>::alignment() as usize,8*std::mem::size_of::<u64>());
         
         let b = AlignedBitfield::<u64>((128,0));
         assert_eq!(b.position(), 128);
         assert_eq!(b.get(130), false);
+    }
+
+    #[test]
+    fn test_bitfield_usize_set() {
+        assert_eq!(AlignedBitfield::<usize>::alignment(),8*std::mem::size_of::<usize>());
+        
+        let mut b = AlignedBitfield::<usize>((128,0));
+        b.set(130,true);
+        b.set(128,true);
+        b.set(140,true);
+        if std::mem::size_of::<usize>() == 8 {
+            b.set(191,true);
+        }
+
+        assert_eq!(b.get(128), true);
+        assert_eq!(b.get(129), false);
+        assert_eq!(b.get(130), true);
+        assert_eq!(b.get(131), false);
+        assert_eq!(b.get(135), false);
+        assert_eq!(b.get(140), true);
+        assert_eq!(b.get(145), false);
+        if std::mem::size_of::<usize>() == 8 {
+            assert_eq!(b.get(191), true);
+        }
+    }
+
+    #[test]
+    fn test_bitfield_u64_set() {
+        assert_eq!(AlignedBitfield::<usize>::alignment(),64);
+        
+        let mut b = AlignedBitfield::<u64>((128,0));
+        b.set(130,true);
+        b.set(128,true);
+        b.set(140,true);
+        b.set(191,true);
+
+        assert_eq!(b.get(128), true);
+        assert_eq!(b.get(129), false);
+        assert_eq!(b.get(130), true);
+        assert_eq!(b.get(131), false);
+        assert_eq!(b.get(135), false);
+        assert_eq!(b.get(140), true);
+        assert_eq!(b.get(145), false);
+        assert_eq!(b.get(191), true);
     }
 }

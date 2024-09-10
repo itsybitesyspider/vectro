@@ -1,4 +1,3 @@
-- [ ] (1 day) Add unit tests to all modules
 - [ ] (1 day) AlignedBitfield should support the set operation
 - [ ] (1 day) Sorting pairs
 - [ ] (1 day) Vec as AlignedBlock
