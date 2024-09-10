@@ -48,7 +48,7 @@ pub(super) fn pack_length_iter(mut length: u128) -> impl Iterator<Item=NonZeroU8
 
 impl RleInstruction {
     /// Construct a new run of RleInstructions with the given length.
-    pub(super) fn new_run(length: u128) -> impl Iterator<Item=RleInstruction> {
+    pub(super) fn pack(length: u128) -> impl Iterator<Item=RleInstruction> {
         std::iter::once(RleInstruction::NextValue).chain(pack_length_iter(length).map(|x| RleInstruction::Run(x)))
     }
 
@@ -70,5 +70,39 @@ impl RleInstruction {
 
 #[cfg(test)]
 mod test {
-    
+    use std::num::NonZero;
+
+    use super::*;
+
+    #[test]
+    fn test_unpack() {
+        assert_eq!(RleInstruction::Run(NonZero::new(1).unwrap()).unpack(), 1);
+        assert_eq!(RleInstruction::Run(NonZero::new(7).unwrap()).unpack(), 7);
+        assert_eq!(RleInstruction::Run(NonZero::new(127).unwrap()).unpack(), 127);
+        assert_eq!(RleInstruction::Run(NonZero::new(128).unwrap()).unpack(), 1);
+        assert_eq!(RleInstruction::Run(NonZero::new(129).unwrap()).unpack(), 2);
+        assert_eq!(RleInstruction::Run(NonZero::new(130).unwrap()).unpack(), 4);
+        assert_eq!(RleInstruction::Run(NonZero::new(131).unwrap()).unpack(), 8);
+        assert_eq!(RleInstruction::Run(NonZero::new(255).unwrap()).unpack(), 0b10000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_unpack_next_value_token() {
+        let _ = RleInstruction::NextValue.unpack();
+    }
+
+    #[test]
+    fn test_is_next_value() {
+        assert_eq!(true,RleInstruction::NextValue.is_next_value());
+        assert_eq!(false,RleInstruction::Run(NonZero::new(5).unwrap()).is_next_value())
+    }
+
+    #[test]
+    fn test_pack() {
+        assert_eq!(RleInstruction::pack(1).collect::<Vec<RleInstruction>>(), vec![RleInstruction::NextValue, RleInstruction::Run(NonZero::new(1).unwrap())]);
+        assert_eq!(RleInstruction::pack(7).collect::<Vec<RleInstruction>>(), vec![RleInstruction::NextValue, RleInstruction::Run(NonZero::new(7).unwrap())]);
+        assert_eq!(RleInstruction::pack(127).collect::<Vec<RleInstruction>>(), vec![RleInstruction::NextValue, RleInstruction::Run(NonZero::new(127).unwrap())]);
+        assert_eq!(RleInstruction::pack(128).collect::<Vec<RleInstruction>>(), vec![RleInstruction::NextValue, RleInstruction::Run(NonZero::new(135).unwrap())]);
+    }
 }

@@ -44,6 +44,8 @@ impl<'a,Value> Iterator for RleRunIterator<'a,Value> {
             self.length_idx += 1;
         }
 
+        self.value_idx += 1;
+
         Some((value,length))
     }
 }
