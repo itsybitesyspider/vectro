@@ -85,4 +85,51 @@ impl<'a,'b,T> Pair<'a,'b,T> {
         let (k,i) = self.index_of(i);
         &mut self.get_slice_mut(k)[i]
     }
+
+    /// Iterator over all elements of the pair.
+    pub fn iter<'x: 'a+'b>(&'x self) -> impl Iterator<Item=&'x T> {
+        self.a.iter().chain(self.b.iter())
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::Pair;
+
+    #[test]
+    fn test_len() {
+        let mut a = [1,2,3,4,5];
+        let mut b = [1,2,3,4,5,6,7,8];
+
+        let pair = Pair::default().first(&mut a).second(&mut b);
+
+        assert_eq!(pair.len(), 13);
+    }
+
+    #[test]
+    fn test_get() {
+        let mut a = [1,2,3,4,5];
+        let mut b = [10,20,30,40,50,60,70,80];
+
+        let pair = Pair::default().first(&mut a).second(&mut b);
+
+        assert_eq!(pair.get(0), &1);
+        assert_eq!(pair.get(3), &4);
+        assert_eq!(pair.get(4), &5);
+        assert_eq!(pair.get(5), &10);
+        assert_eq!(pair.get(8), &40);
+        assert_eq!(pair.get(12), &80);
+    }
+
+    #[test]
+    fn test_get_mut() {
+        let mut a = [1,2,3,4,5];
+        let mut b = [10,20,30,40,50,60,70,80];
+
+        let mut pair = Pair::default().first(&mut a).second(&mut b);
+
+        *pair.get_mut(2) = -1;
+        *pair.get_mut(8) = -1;
+        assert_eq!(pair.iter().copied().collect::<Vec<_>>(), vec![1,2,-1,4,5,10,20,30,-1,50,60,70,80]);
+    }
 }
