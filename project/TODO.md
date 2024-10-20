@@ -1,4 +1,3 @@
-- [ ] (1 day) AlignedBitfield should support the set operation
 - [ ] (1 day) Sorting pairs
 - [ ] (1 day) Vec as AlignedBlock
 - [ ] (1 day) Vec of AlignedBlocks as an AlignedBlock
@@ -7,7 +6,7 @@
 - [ ] (1 week) Simple strategies to store/compress blocks
 - [ ] (1 month) Variable-size collections
 - [ ] (1 month) Sorting
-- [ ] (1 year) Indexing collections
-- [ ] (1 year) Advanced strategies to store/compress blocks
-- [ ] (1 year) Map/reducing collections
-- [ ] (1 year) Convolutional transforms of collections
+- [ ] (1 season) Indexing collections
+- [ ] (1 season) Advanced strategies to store/compress blocks
+- [ ] (1 season) Map/reducing collections
+- [ ] (1 season) Convolutional transforms of collections

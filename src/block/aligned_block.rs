@@ -1,4 +1,4 @@
-/// A block of data which has an alignment and a (starting) position.
+/// A block of data (an array) which has an alignment and a (starting) position.
 /// The position must be a multiple of the alignment.
 pub trait AlignedBlock {
     /// How the block is indexed (for example, by usize)

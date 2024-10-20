@@ -77,6 +77,7 @@ mod test {
 
     #[test]
     fn test_bitfield_usize() {
+
         assert_eq!(AlignedBitfield::<usize>::alignment(),8*std::mem::size_of::<usize>());
         
         let b = AlignedBitfield::<usize>((128,0));
@@ -96,22 +97,26 @@ mod test {
     #[test]
     fn test_bitfield_usize_set() {
         assert_eq!(AlignedBitfield::<usize>::alignment(),8*std::mem::size_of::<usize>());
+        assert!(std::mem::size_of::<usize>() == 4 || std::mem::size_of::<usize>() == 8, "expecting either 32 bit or 64 bit usize");
         
         let mut b = AlignedBitfield::<usize>((128,0));
         b.set(130,true);
         b.set(128,true);
         b.set(140,true);
+        b.set(128, false);
+
         if std::mem::size_of::<usize>() == 8 {
             b.set(191,true);
         }
 
-        assert_eq!(b.get(128), true);
+        assert_eq!(b.get(128), false);
         assert_eq!(b.get(129), false);
         assert_eq!(b.get(130), true);
         assert_eq!(b.get(131), false);
         assert_eq!(b.get(135), false);
         assert_eq!(b.get(140), true);
         assert_eq!(b.get(145), false);
+
         if std::mem::size_of::<usize>() == 8 {
             assert_eq!(b.get(191), true);
         }
@@ -126,8 +131,9 @@ mod test {
         b.set(128,true);
         b.set(140,true);
         b.set(191,true);
+        b.set(128, false);
 
-        assert_eq!(b.get(128), true);
+        assert_eq!(b.get(128), false);
         assert_eq!(b.get(129), false);
         assert_eq!(b.get(130), true);
         assert_eq!(b.get(131), false);

@@ -40,7 +40,7 @@ impl<'a,'b,T> Pair<'a,'b,T> {
     /// Given an index into the combined pair, calculate
     /// (1) which half-slice the index falls within, and
     /// (2) the corresponding index within that half-slice.
-    pub fn index_of(&self, i: usize) -> (usize,usize) {
+    fn index_of(&self, i: usize) -> (usize,usize) {
         if i < self.a.len() {
             (0,i)
         } else if i < self.a.len() + self.b.len() {
@@ -52,7 +52,7 @@ impl<'a,'b,T> Pair<'a,'b,T> {
 
     /// Get the left or right half-slices, based on the given index.
     /// The index must be 0 (left half-slice) or 1 (right half-slice).
-    pub fn get_slice(&self, i: usize) -> &[T] {
+    fn get_slice(&self, i: usize) -> &[T] {
         if i == 0 {
             self.a
         } else if i == 1 {
@@ -64,7 +64,7 @@ impl<'a,'b,T> Pair<'a,'b,T> {
 
     /// Get a mutable reference to the left or right half-slices, based on the given index.
     /// Same behavior as `get_slice`.
-    pub fn get_slice_mut(&mut self, i: usize) -> &mut [T] {
+    fn get_slice_mut(&mut self, i: usize) -> &mut [T] {
         if i == 0 {
             self.a
         } else if i == 1 {
@@ -89,6 +89,24 @@ impl<'a,'b,T> Pair<'a,'b,T> {
     /// Iterator over all elements of the pair.
     pub fn iter<'x: 'a+'b>(&'x self) -> impl Iterator<Item=&'x T> {
         self.a.iter().chain(self.b.iter())
+    }
+
+    /// Exchange the elements at the two given positions.
+    pub fn swap(&mut self, i: usize, j: usize) {
+        let mut i = self.index_of(i);
+        let mut j = self.index_of(j);
+
+        if i.0 == j.0 {
+            self.get_slice_mut(i.0).swap(i.1,j.1);
+        } else {
+            if i.0 > j.0 {
+                std::mem::swap(&mut i, &mut j);
+            }
+
+            let a = &mut self.a[i.1];
+            let b = &mut self.b[j.1];
+            std::mem::swap(a,b);
+        }
     }
 }
 
@@ -131,5 +149,29 @@ mod test {
         *pair.get_mut(2) = -1;
         *pair.get_mut(8) = -1;
         assert_eq!(pair.iter().copied().collect::<Vec<_>>(), vec![1,2,-1,4,5,10,20,30,-1,50,60,70,80]);
+    }
+
+    #[test]
+    fn test_swap() {
+        let mut a = [1,2,3,4,5];
+        let mut b = [10,20,30,40,50];
+
+        let mut pair = Pair::default().first(&mut a).second(&mut b);
+
+        pair.swap(2,7);
+
+        assert_eq!(pair.iter().copied().collect::<Vec<_>>(), vec![1,2,30,4,5,10,20,3,40,50]);
+    }
+
+    #[test]
+    fn test_reverse_swap() {
+        let mut a = [1,2,3,4,5];
+        let mut b = [10,20,30,40,50];
+
+        let mut pair = Pair::default().first(&mut a).second(&mut b);
+
+        pair.swap(7,2);
+
+        assert_eq!(pair.iter().copied().collect::<Vec<_>>(), vec![1,2,30,4,5,10,20,3,40,50]);
     }
 }
