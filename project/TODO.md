@@ -1,5 +1,3 @@
-- [ ] (1 day) Sorting pairs
-- [ ] (1 day) Vec as AlignedBlock
 - [ ] (1 day) Vec of AlignedBlocks as an AlignedBlock
 - [ ] (1 week) Bitsets, iterating over bitsets, union, intersection, difference, etc
 - [ ] (1 week) Fixed-size collection of blocks, with option to run-length encode
