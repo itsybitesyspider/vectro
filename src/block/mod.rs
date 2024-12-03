@@ -6,5 +6,5 @@ mod singleton;
 
 pub use aligned_block::*;
 pub use aligned_vec::*;
-pub use dense_vec::*;
 pub use bitfield::*;
+pub use dense_vec::*;

@@ -9,7 +9,7 @@ pub trait IndexedBlock {
 /// A block of data (an array) which has an alignment and a (starting) position.
 /// This is different from a normal vector which always begins at zero and has an arbitrary length.
 /// The starting position must be a multiple of the alignment, and the length must also be exactly the alignment.
-pub trait AlignedBlock : IndexedBlock {
+pub trait AlignedBlock: IndexedBlock {
     /// The required alignment for this kind of block.
     fn alignment() -> Self::Index;
     /// The position of the starting element of this block.
@@ -17,14 +17,13 @@ pub trait AlignedBlock : IndexedBlock {
 }
 
 /// A block where it is possible to get any individual element.
-pub trait BlockFetch : IndexedBlock {
+pub trait BlockFetch: IndexedBlock {
     /// Get an element of a block.
     fn fetch(&self, index: Self::Index) -> Self::Item;
 }
 
 /// A block where it is possible to set any individual element.
-pub trait BlockStore : IndexedBlock {
+pub trait BlockStore: IndexedBlock {
     /// Set an element of a block.
     fn store(&mut self, index: Self::Index, item: Self::Item);
 }
-

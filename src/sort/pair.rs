@@ -1,10 +1,10 @@
 /// A pair of half-slices.
-pub struct Pair<'a,'b, T> {
+pub struct Pair<'a, 'b, T> {
     a: &'a mut [T],
     b: &'b mut [T],
 }
 
-impl<T> Default for Pair<'static,'static,T> {
+impl<T> Default for Pair<'static, 'static, T> {
     fn default() -> Self {
         Pair {
             a: &mut [],
@@ -13,38 +13,35 @@ impl<T> Default for Pair<'static,'static,T> {
     }
 }
 
-impl<'a,'b,T> Pair<'a,'b,T> {
+impl<'a, 'b, T> Pair<'a, 'b, T> {
     /// Construct a new pair with the given left and right half-slices.
     pub fn new(a: &'a mut [T], b: &'b mut [T]) -> Self {
-        Pair {
-            a,
-            b,
-        }
+        Pair { a, b }
     }
 
     /// Replace the left half-slice of the pair.
-    pub fn first<'x>(self, a: &'x mut [T]) -> Pair<'x,'b,T> {
-        Pair::<'x,'b,T>::new(a,self.b)
+    pub fn first<'x>(self, a: &'x mut [T]) -> Pair<'x, 'b, T> {
+        Pair::<'x, 'b, T>::new(a, self.b)
     }
 
     /// Replace the right helf-slice of the pair.
-    pub fn second<'y>(self, b: &'y mut [T]) -> Pair<'a,'y,T> {
-        Pair::<'a,'y,T>::new(self.a,b)
+    pub fn second<'y>(self, b: &'y mut [T]) -> Pair<'a, 'y, T> {
+        Pair::<'a, 'y, T>::new(self.a, b)
     }
 
     /// The length of the combined pair.
     pub fn len(&self) -> usize {
-        self.a.len()+self.b.len()
+        self.a.len() + self.b.len()
     }
 
     /// Given an index into the combined pair, calculate
     /// (1) which half-slice the index falls within, and
     /// (2) the corresponding index within that half-slice.
-    fn index_of(&self, i: usize) -> (usize,usize) {
+    fn index_of(&self, i: usize) -> (usize, usize) {
         if i < self.a.len() {
-            (0,i)
+            (0, i)
         } else if i < self.a.len() + self.b.len() {
-            (1,i-self.a.len())
+            (1, i - self.a.len())
         } else {
             panic!("index out of bounds")
         }
@@ -76,18 +73,18 @@ impl<'a,'b,T> Pair<'a,'b,T> {
 
     /// Get a reference to the element at the given index into the combined pair.
     pub fn get(&self, i: usize) -> &T {
-        let (k,i) = self.index_of(i);
+        let (k, i) = self.index_of(i);
         &self.get_slice(k)[i]
     }
 
     /// Get a mutable reference to the element at the given index into the combined pair.
     pub fn get_mut(&mut self, i: usize) -> &mut T {
-        let (k,i) = self.index_of(i);
+        let (k, i) = self.index_of(i);
         &mut self.get_slice_mut(k)[i]
     }
 
     /// Iterator over all elements of the pair.
-    pub fn iter<'x: 'a+'b>(&'x self) -> impl Iterator<Item=&'x T> {
+    pub fn iter<'x: 'a + 'b>(&'x self) -> impl Iterator<Item = &'x T> {
         self.a.iter().chain(self.b.iter())
     }
 
@@ -97,7 +94,7 @@ impl<'a,'b,T> Pair<'a,'b,T> {
         let mut j = self.index_of(j);
 
         if i.0 == j.0 {
-            self.get_slice_mut(i.0).swap(i.1,j.1);
+            self.get_slice_mut(i.0).swap(i.1, j.1);
         } else {
             if i.0 > j.0 {
                 std::mem::swap(&mut i, &mut j);
@@ -105,7 +102,7 @@ impl<'a,'b,T> Pair<'a,'b,T> {
 
             let a = &mut self.a[i.1];
             let b = &mut self.b[j.1];
-            std::mem::swap(a,b);
+            std::mem::swap(a, b);
         }
     }
 }
@@ -116,8 +113,8 @@ mod test {
 
     #[test]
     fn test_len() {
-        let mut a = [1,2,3,4,5];
-        let mut b = [1,2,3,4,5,6,7,8];
+        let mut a = [1, 2, 3, 4, 5];
+        let mut b = [1, 2, 3, 4, 5, 6, 7, 8];
 
         let pair = Pair::default().first(&mut a).second(&mut b);
 
@@ -126,8 +123,8 @@ mod test {
 
     #[test]
     fn test_get() {
-        let mut a = [1,2,3,4,5];
-        let mut b = [10,20,30,40,50,60,70,80];
+        let mut a = [1, 2, 3, 4, 5];
+        let mut b = [10, 20, 30, 40, 50, 60, 70, 80];
 
         let pair = Pair::default().first(&mut a).second(&mut b);
 
@@ -141,37 +138,46 @@ mod test {
 
     #[test]
     fn test_get_mut() {
-        let mut a = [1,2,3,4,5];
-        let mut b = [10,20,30,40,50,60,70,80];
+        let mut a = [1, 2, 3, 4, 5];
+        let mut b = [10, 20, 30, 40, 50, 60, 70, 80];
 
         let mut pair = Pair::default().first(&mut a).second(&mut b);
 
         *pair.get_mut(2) = -1;
         *pair.get_mut(8) = -1;
-        assert_eq!(pair.iter().copied().collect::<Vec<_>>(), vec![1,2,-1,4,5,10,20,30,-1,50,60,70,80]);
+        assert_eq!(
+            pair.iter().copied().collect::<Vec<_>>(),
+            vec![1, 2, -1, 4, 5, 10, 20, 30, -1, 50, 60, 70, 80]
+        );
     }
 
     #[test]
     fn test_swap() {
-        let mut a = [1,2,3,4,5];
-        let mut b = [10,20,30,40,50];
+        let mut a = [1, 2, 3, 4, 5];
+        let mut b = [10, 20, 30, 40, 50];
 
         let mut pair = Pair::default().first(&mut a).second(&mut b);
 
-        pair.swap(2,7);
+        pair.swap(2, 7);
 
-        assert_eq!(pair.iter().copied().collect::<Vec<_>>(), vec![1,2,30,4,5,10,20,3,40,50]);
+        assert_eq!(
+            pair.iter().copied().collect::<Vec<_>>(),
+            vec![1, 2, 30, 4, 5, 10, 20, 3, 40, 50]
+        );
     }
 
     #[test]
     fn test_reverse_swap() {
-        let mut a = [1,2,3,4,5];
-        let mut b = [10,20,30,40,50];
+        let mut a = [1, 2, 3, 4, 5];
+        let mut b = [10, 20, 30, 40, 50];
 
         let mut pair = Pair::default().first(&mut a).second(&mut b);
 
-        pair.swap(7,2);
+        pair.swap(7, 2);
 
-        assert_eq!(pair.iter().copied().collect::<Vec<_>>(), vec![1,2,30,4,5,10,20,3,40,50]);
+        assert_eq!(
+            pair.iter().copied().collect::<Vec<_>>(),
+            vec![1, 2, 30, 4, 5, 10, 20, 3, 40, 50]
+        );
     }
 }
