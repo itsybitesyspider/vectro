@@ -1,4 +1,8 @@
-- [ ] (1 day) Vec of AlignedBlocks as an AlignedBlock
+- [ ] (1 day) Vec of AlignedBlocks (DenseVec)
+- [ ] (1 day) Vec of AlignedBlocks (SparseVec)
+- [ ] (1 day) Arc of AlignedBlock is AlignedBlock
+- [ ] (1 day) Create AlignedBlock from Iterators
+- [ ] (1 day) Iterate over AlignedBlocks
 - [ ] (1 week) Bitsets, iterating over bitsets, union, intersection, difference, etc
 - [ ] (1 week) Fixed-size collection of blocks, with option to run-length encode
 - [ ] (1 week) Simple strategies to store/compress blocks

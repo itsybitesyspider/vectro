@@ -1,51 +1,82 @@
 use std::ops::{Index, IndexMut};
 
-use super::AlignedBlock;
+use super::{AlignedBlock, BlockFetch, BlockStore, IndexedBlock};
 
-/// A vector as an AlignedBlock.
-pub struct AlignedVec<const N: usize, T>((usize,Vec<T>));
+/// A vector as an AlignedBlock.s
+pub struct AlignedVec<T,const N: usize> {
+    position: usize,
+    vec: Vec<T>
+}
 
-impl<const N: usize, T> AlignedBlock for AlignedVec<N,T> {
+impl<T, const N: usize> IndexedBlock for AlignedVec<T,N> {
     type Index = usize;
     type Item = T;
+}
 
+impl<T, const N: usize> AlignedBlock for AlignedVec<T,N> {
     fn alignment() -> Self::Index {
         N
     }
 
     fn position(&self) -> Self::Index {
-        self.0.position()
+        self.position
     }
 }
 
-impl<const N: usize, T> AlignedVec<N, T> {
+impl<T, const N: usize> AlignedVec<T, N> {
     /// Construct a new AlignedVec, starting at the given position.
     /// The position must be aligned with (divisble by) N.
     /// The length of the vector must be exactly N.
     pub fn new_from(position: usize, vec: Vec<T>) -> Self {
         assert_eq!(vec.len(), Self::alignment());
         assert!(position % Self::alignment() == 0);
-        AlignedVec((position, vec))
+        AlignedVec {
+            position, 
+            vec
+        }
     }
 
     /// Turn this AlignedVec back into the original Vec.
     pub fn into_vec(self) -> Vec<T> {
-        self.0.1
+        self.vec
+    }
+
+    fn index_of(&self, index: usize) -> usize {
+        assert!(index >= self.position());
+        let index = index - self.position();
+        assert!(index < Self::alignment());
+        index
     }
 }
 
-impl<const N: usize, T> Index<usize> for AlignedVec<N,T> {
+impl<T,const N: usize> BlockFetch for AlignedVec<T,N> 
+where T: Copy
+{
+    fn fetch(&self, index: Self::Index) -> Self::Item {
+        self[index]
+    }
+}
+
+impl<T,const N: usize> BlockStore for AlignedVec<T,N> 
+where T: Copy
+{
+    fn store(&mut self, index: Self::Index, item: Self::Item) {
+        self[index] = item;
+    }
+}
+
+impl<T,const N: usize> Index<usize> for AlignedVec<T,N> {
     type Output = T;
 
     fn index(&self, index: usize) -> &Self::Output {
-        &self.0.1[index-self.position()]
+        &self.vec[self.index_of(index)]
     }
 }
 
-impl<const N: usize, T> IndexMut<usize> for AlignedVec<N,T> {
+impl<T, const N: usize> IndexMut<usize> for AlignedVec<T,N> {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
-        let position = self.position();
-        &mut self.0.1[index-position]
+        let index = self.index_of(index);
+        &mut self.vec[index]
     }
 }
 
@@ -56,7 +87,7 @@ mod test {
     #[test]
     pub fn test_index() {
         let v = vec![1,2,3,4,5,6,7,8];
-        let av: AlignedVec<8,i64> = AlignedVec::new_from(32,v);
+        let av: AlignedVec<i64,8> = AlignedVec::new_from(32,v);
 
         assert_eq!(av[32], 1);
         assert_eq!(av[36], 5);
@@ -66,7 +97,7 @@ mod test {
     #[test]
     pub fn test_write() {
         let v = vec![1,2,3,4,5,6,7,8];
-        let mut av: AlignedVec<8,i64> = AlignedVec::new_from(32,v);
+        let mut av: AlignedVec<i64, 8> = AlignedVec::new_from(32,v);
 
         av[36] = 500;
 
@@ -78,7 +109,7 @@ mod test {
     #[test]
     fn test_into_vec() {
         let v1 = vec![5,3,7,9,1,1,90,3];
-        let av: AlignedVec<8,i64> = AlignedVec::new_from(32, v1.clone());
+        let av: AlignedVec<i64, 8> = AlignedVec::new_from(32, v1.clone());
         let v2 = av.into_vec();
 
         assert_eq!(v1,v2);
