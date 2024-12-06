@@ -10,6 +10,8 @@
 
 /// Utilities for working with blocks of data.
 pub mod block;
+/// Index types
+pub mod numerical_index;
 /// Run-length encoding.
 pub mod rle;
 /// Utilities for sorting.

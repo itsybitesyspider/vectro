@@ -1,6 +1,6 @@
 use std::ops::{Index, IndexMut};
 
-use super::{AlignedBlock, BlockFetch, BlockStore, IndexedBlock};
+use super::{AlignedBlock, NewByIndex, BlockFetch, BlockStore, IndexedBlock};
 
 /// A vector as an AlignedBlock.s
 pub struct AlignedVec<T, const N: usize> {
@@ -20,6 +20,12 @@ impl<T, const N: usize> AlignedBlock for AlignedVec<T, N> {
 
     fn position(&self) -> Self::Index {
         self.position
+    }
+}
+
+impl<T, const N: usize> NewByIndex for AlignedVec<T, N> {
+    fn new_per_index(position: Self::Index, default: impl Fn(usize) -> Self::Item) -> Self {
+        Self::new_from(position, (position..position+Self::alignment()).map(default).collect())
     }
 }
 

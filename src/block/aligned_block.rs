@@ -16,6 +16,18 @@ pub trait AlignedBlock: IndexedBlock {
     fn position(&self) -> Self::Index;
 }
 
+/// A block where it is possible to construct a default value at a given position.
+pub trait NewByIndex: AlignedBlock {
+    /// Construct a block of data with a default value and position.
+    fn new_per_index(position: Self::Index, value: impl Fn(Self::Index) -> Self::Item) -> Self;
+}
+
+/// Construct default values for a given item at a given index.
+pub trait AlignedDefault<Index,Item> {
+    /// Determine the default value at the given index.
+    fn default_at_index(&self, i: Index) -> Item;
+}
+
 /// A block where it is possible to get any individual element.
 pub trait BlockFetch: IndexedBlock {
     /// Get an element of a block.
@@ -26,4 +38,13 @@ pub trait BlockFetch: IndexedBlock {
 pub trait BlockStore: IndexedBlock {
     /// Set an element of a block.
     fn store(&mut self, index: Self::Index, item: Self::Item);
+}
+
+/// Initialize an AlignedBlock using its Default impl.
+pub struct DefaultValue;
+
+impl<Index,Item: Default> AlignedDefault<Index,Item> for DefaultValue {
+    fn default_at_index(&self, _: Index) -> Item {
+        Item::default()
+    }
 }

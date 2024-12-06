@@ -1,5 +1,5 @@
-- [ ] (1 day) Vec of AlignedBlocks (DenseVec)
 - [ ] (1 day) Vec of AlignedBlocks (SparseVec)
+- [ ] (1 day) Use NumericalIndex pervasively
 - [ ] (1 day) Arc of AlignedBlock is AlignedBlock
 - [ ] (1 day) Create AlignedBlock from Iterators
 - [ ] (1 day) Iterate over AlignedBlocks

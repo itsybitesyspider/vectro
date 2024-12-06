@@ -35,13 +35,9 @@ where
         self
     }
 
-    /// Given an index, calculate the (big,little) index,
-    /// where the big index is the index of the AlignedBlock within this DenseVec,
-    /// and the little index is the index of the item within the AlignedBlock.
-    fn index_of(&self, index: usize) -> (usize, usize) {
-        let big = index / T::alignment();
-        let little = index % T::alignment();
-        (big, little)
+    /// Given an index, calculate the index of the containing AlignedBlock.
+    fn index_of(&self, index: usize) -> usize {
+        index / T::alignment()
     }
 
     /// Push an entire block onto the end of this DenseVec.
@@ -70,7 +66,7 @@ where
     T: AlignedBlock<Index = usize> + BlockFetch,
 {
     fn fetch(&self, index: Self::Index) -> Self::Item {
-        let (big, _little) = self.index_of(index);
+        let big = self.index_of(index);
         self.vec[big].fetch(index)
     }
 }
@@ -80,7 +76,7 @@ where
     T: AlignedBlock<Index = usize> + BlockStore,
 {
     fn store(&mut self, index: Self::Index, item: Self::Item) {
-        let (big, _little) = self.index_of(index);
+        let big = self.index_of(index);
         self.vec[big].store(index, item);
     }
 }
