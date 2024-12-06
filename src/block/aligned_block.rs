@@ -23,7 +23,7 @@ pub trait NewByIndex: AlignedBlock {
 }
 
 /// Construct default values for a given item at a given index.
-pub trait AlignedDefault<Index,Item> {
+pub trait AlignedDefault<Index, Item> {
     /// Determine the default value at the given index.
     fn default_at_index(&self, i: Index) -> Item;
 }
@@ -43,7 +43,7 @@ pub trait BlockStore: IndexedBlock {
 /// Initialize an AlignedBlock using its Default impl.
 pub struct DefaultValue;
 
-impl<Index,Item: Default> AlignedDefault<Index,Item> for DefaultValue {
+impl<Index, Item: Default> AlignedDefault<Index, Item> for DefaultValue {
     fn default_at_index(&self, _: Index) -> Item {
         Item::default()
     }
