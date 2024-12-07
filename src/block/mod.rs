@@ -1,3 +1,4 @@
+mod arc_block;
 mod aligned_block;
 mod aligned_vec;
 mod bitfield;
