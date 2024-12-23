@@ -1,9 +1,9 @@
 use crate::numerical_index::NumericalIndex;
 
-use super::{AlignedBlock, AlignedDefault, BlockFetch, BlockStore, IndexedBlock, NewByIndex};
+use super::{AlignedBlock, DefaultPerIndex, BlockFetch, BlockStore, IndexedBlock, AlignedBlockFromDefault};
 
 /// A vector of items that are themselves AlignedBlocks.
-pub struct SparseVec<T: IndexedBlock, D: AlignedDefault<T::Index, T::Item>> {
+pub struct SparseVec<T: IndexedBlock, D: DefaultPerIndex<T::Index, T::Item>> {
     default_value: D,
     vec: Vec<T>,
 }
@@ -11,7 +11,7 @@ pub struct SparseVec<T: IndexedBlock, D: AlignedDefault<T::Index, T::Item>> {
 impl<T, D> SparseVec<T, D>
 where
     T: AlignedBlock,
-    D: AlignedDefault<T::Index, T::Item>,
+    D: DefaultPerIndex<T::Index, T::Item>,
     T::Index: NumericalIndex,
 {
     /// Construct a new SparseVec from an existing Vec.
@@ -78,7 +78,7 @@ where
 
     fn ensure_index_exists(&mut self, index: T::Index) -> usize
     where
-        T: NewByIndex,
+        T: AlignedBlockFromDefault,
         T::Item: Default,
         T::Index: NumericalIndex,
     {
@@ -89,7 +89,7 @@ where
             Err(does_not_exist) => {
                 self.vec.insert(
                     does_not_exist,
-                    T::new_per_index(index, |_| T::Item::default()),
+                    T::default_per_index(index, |_| T::Item::default()),
                 );
                 does_not_exist
             }
@@ -100,7 +100,7 @@ where
 impl<T, D> IndexedBlock for SparseVec<T, D>
 where
     T: AlignedBlock,
-    D: AlignedDefault<T::Index, T::Item>,
+    D: DefaultPerIndex<T::Index, T::Item>,
 {
     type Index = T::Index;
     type Item = T::Item;
@@ -111,7 +111,7 @@ where
     T: AlignedBlock + BlockFetch,
     T::Index: NumericalIndex,
     T::Item: Copy,
-    D: AlignedDefault<T::Index, T::Item>,
+    D: DefaultPerIndex<T::Index, T::Item>,
 {
     fn fetch(&self, index: Self::Index) -> Self::Item {
         let big = self.index_of(index);
@@ -125,10 +125,10 @@ where
 
 impl<T, D> BlockStore for SparseVec<T, D>
 where
-    T: AlignedBlock + BlockStore + NewByIndex,
+    T: AlignedBlock + BlockStore + AlignedBlockFromDefault,
     T::Index: NumericalIndex,
     T::Item: Default,
-    D: AlignedDefault<T::Index, T::Item>,
+    D: DefaultPerIndex<T::Index, T::Item>,
 {
     fn store(&mut self, index: Self::Index, item: Self::Item) {
         let big = self.ensure_index_exists(index);

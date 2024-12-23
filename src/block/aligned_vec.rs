@@ -1,6 +1,6 @@
 use std::ops::{Index, IndexMut};
 
-use super::{AlignedBlock, BlockFetch, BlockStore, IndexedBlock, NewByIndex};
+use super::{AlignedBlock, AlignedBlockFromDefault, AlignedBlockFromIterator, BlockFetch, BlockStore, IndexedBlock};
 
 /// A vector as an AlignedBlock.s
 pub struct AlignedVec<T, const N: usize> {
@@ -23,8 +23,8 @@ impl<T, const N: usize> AlignedBlock for AlignedVec<T, N> {
     }
 }
 
-impl<T, const N: usize> NewByIndex for AlignedVec<T, N> {
-    fn new_per_index(position: Self::Index, default: impl Fn(usize) -> Self::Item) -> Self {
+impl<T, const N: usize> AlignedBlockFromDefault for AlignedVec<T, N> {
+    fn default_per_index(position: Self::Index, default: impl Fn(usize) -> Self::Item) -> Self {
         Self::new_from(
             position,
             (position..position + Self::alignment())
@@ -90,8 +90,21 @@ impl<T, const N: usize> IndexMut<usize> for AlignedVec<T, N> {
     }
 }
 
+impl<T, const N: usize> AlignedBlockFromIterator for AlignedVec<T, N> {
+    fn from_iterator<I>(position: Self::Index, iter: &mut I) -> Self
+    where I: Iterator<Item=Self::Item> {
+        let mut vec = Vec::with_capacity(Self::alignment());
+        for _ in 0..Self::alignment() {
+            vec.push(iter.next().expect("iterator to contain at least as many elements as Self::alignment()"));
+        }
+        Self::new_from(position, vec)
+    }
+}
+
 #[cfg(test)]
 mod test {
+    use crate::block::AlignedBlockFromIterator;
+
     use super::AlignedVec;
 
     #[test]
@@ -107,7 +120,7 @@ mod test {
     #[test]
     pub fn test_write() {
         let v = vec![1, 2, 3, 4, 5, 6, 7, 8];
-        let mut av: AlignedVec<i64, 8> = AlignedVec::new_from(32, v);
+        let mut av: AlignedVec<i64, 8> = AlignedVec::from_iterator(32, &mut v.into_iter());
 
         av[36] = 500;
 

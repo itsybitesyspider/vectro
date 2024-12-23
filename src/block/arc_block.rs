@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use super::{AlignedBlock, BlockFetch, BlockStore, IndexedBlock, NewByIndex};
+use super::{AlignedBlock, AlignedBlockFromDefault, AlignedBlockFromIterator, BlockFetch, BlockStore, IndexedBlock};
 
 impl<B> IndexedBlock for Arc<B>
 where B: IndexedBlock
@@ -21,11 +21,11 @@ where B: AlignedBlock
     }
 }
 
-impl<B> NewByIndex for Arc<B>
-where B: NewByIndex
+impl<B> AlignedBlockFromDefault for Arc<B>
+where B: AlignedBlockFromDefault
 {
-    fn new_per_index(position: Self::Index, value: impl Fn(Self::Index) -> Self::Item) -> Self {
-        Arc::new(B::new_per_index(position, value))
+    fn default_per_index(position: Self::Index, value: impl Fn(Self::Index) -> Self::Item) -> Self {
+        Arc::new(B::default_per_index(position, value))
     }
 }
 
@@ -43,5 +43,14 @@ B: Clone
 {
     fn store(&mut self, index: Self::Index, item: Self::Item) {
         Arc::make_mut(self).store(index,item);
+    }
+}
+
+impl<B> AlignedBlockFromIterator for Arc<B>
+where B: AlignedBlockFromIterator
+{
+    fn from_iterator<I>(position: Self::Index, iter: &mut I) -> Self
+        where I: Iterator<Item=Self::Item> {
+        Arc::new(B::from_iterator(position, iter))
     }
 }

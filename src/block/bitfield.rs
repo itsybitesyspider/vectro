@@ -1,6 +1,5 @@
 use super::{
-    aligned_block::{AlignedBlock, BlockFetch},
-    BlockStore, IndexedBlock,
+    aligned_block::{AlignedBlock, BlockFetch}, AlignedBlockFromDefault, AlignedBlockFromIterator, BlockStore, IndexedBlock
 };
 
 /// An aligned block of booleans.
@@ -42,7 +41,7 @@ impl AlignedBlock for AlignedBitfield<u64> {
 impl BlockFetch for AlignedBitfield<usize> {
     fn fetch(&self, index: Self::Index) -> bool {
         let index = index - self.position;
-        assert!(index < 8 * std::mem::size_of::<Self::Index>() as Self::Index);
+        assert!(index < Self::alignment());
         (self.bits >> index) & 0x01 != 0
     }
 }
@@ -50,7 +49,7 @@ impl BlockFetch for AlignedBitfield<usize> {
 impl BlockFetch for AlignedBitfield<u64> {
     fn fetch(&self, index: Self::Index) -> bool {
         let index = index - self.position;
-        assert!(index < 8 * std::mem::size_of::<Self::Index>() as Self::Index);
+        assert!(index < Self::alignment());
         (self.bits >> index) & 0x01 != 0
     }
 }
@@ -75,6 +74,30 @@ impl BlockStore for AlignedBitfield<u64> {
             self.bits = self.bits | 0x01 << index;
         } else {
             self.bits = self.bits & !(0x01 << index);
+        }
+    }
+}
+
+impl AlignedBlockFromDefault for AlignedBitfield<usize> {
+    fn default_per_index(position: Self::Index, value: impl Fn(Self::Index) -> Self::Item) -> Self {
+        Self::from_iterator(position,&mut (0..Self::alignment()).map(value))
+    }
+}
+
+impl AlignedBlockFromIterator for AlignedBitfield<usize> {
+    fn from_iterator<I>(position: Self::Index, iter: &mut I) -> Self
+    where I: Iterator<Item=Self::Item> {
+        let mut bits: usize = 0;
+
+        for i in 0..Self::alignment() {
+            if iter.next().expect("iterator should provide at least as many elements as there are bits in a 'usize'") {
+                bits |= 0x01 << i;
+            }
+        }
+
+        AlignedBitfield {
+            position,
+            bits
         }
     }
 }

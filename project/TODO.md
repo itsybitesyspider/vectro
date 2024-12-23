@@ -1,4 +1,3 @@
-- [ ] (1 day) Create AlignedBlock from Iterators
 - [ ] (1 day) Iterate over AlignedBlocks
 - [ ] (1 week) Bitsets, iterating over bitsets, union, intersection, difference, etc
 - [ ] (1 week) Fixed-size collection of blocks, with option to run-length encode
