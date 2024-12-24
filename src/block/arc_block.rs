@@ -1,6 +1,8 @@
 use std::sync::Arc;
 
-use super::{AlignedBlock, AlignedBlockFromIterator, BlockFetch, BlockStore, IndexedBlock};
+use super::{
+    AlignedBlock, AlignedBlockFromIterator, BlockFetch, BlockStore, DefaultPerIndex, IndexedBlock,
+};
 
 impl<B> IndexedBlock for Arc<B>
 where
@@ -51,5 +53,14 @@ where
         I: Iterator<Item = Self::Item>,
     {
         Arc::new(B::from_iterator(position, iter))
+    }
+}
+
+impl<D, Index, Item> DefaultPerIndex<Index, Item> for Arc<D>
+where
+    D: DefaultPerIndex<Index, Item>,
+{
+    fn default_at_index(&self, i: Index) -> Item {
+        Arc::as_ref(self).default_at_index(i)
     }
 }

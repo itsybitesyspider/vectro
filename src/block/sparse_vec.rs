@@ -119,7 +119,6 @@ impl<T, D> BlockFetch for SparseVec<T, D>
 where
     T: AlignedBlock + BlockFetch,
     T::Index: NumericalIndex,
-    T::Item: Copy,
     D: DefaultPerIndex<T::Index, T::Item>,
 {
     fn fetch(&self, index: Self::Index) -> Self::Item {
@@ -141,6 +140,18 @@ where
     fn store(&mut self, index: Self::Index, item: Self::Item) {
         let big = self.ensure_index_exists(index);
         self.vec[big].store(index, item);
+    }
+}
+
+impl<T, D> DefaultPerIndex<T::Index, T::Item> for SparseVec<T, D>
+where
+    D: DefaultPerIndex<T::Index, T::Item>,
+    T: AlignedBlock + BlockFetch,
+    T::Index: NumericalIndex,
+    T::Item: Copy,
+{
+    fn default_at_index(&self, i: T::Index) -> T::Item {
+        self.fetch(i)
     }
 }
 

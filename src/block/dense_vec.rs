@@ -1,4 +1,4 @@
-use super::{AlignedBlock, BlockFetch, BlockStore, IndexedBlock};
+use super::{AlignedBlock, BlockFetch, BlockStore, DefaultPerIndex, IndexedBlock};
 
 /// A vector of items that are themselves AlignedBlocks.
 pub struct DenseVec<T> {
@@ -78,6 +78,19 @@ where
     fn store(&mut self, index: Self::Index, item: Self::Item) {
         let big = self.index_of(index);
         self.vec[big].store(index, item);
+    }
+}
+
+impl<T> DefaultPerIndex<T::Index, Option<T::Item>> for DenseVec<T>
+where
+    T: AlignedBlock<Index = usize> + BlockFetch,
+{
+    fn default_at_index(&self, i: T::Index) -> Option<T::Item> {
+        if self.index_of(i) < self.vec.len() {
+            Some(self.fetch(i))
+        } else {
+            None
+        }
     }
 }
 
