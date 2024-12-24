@@ -1,5 +1,6 @@
 use super::{
-    aligned_block::{AlignedBlock, BlockFetch}, AlignedBlockFromDefault, AlignedBlockFromIterator, BlockStore, IndexedBlock
+    aligned_block::{AlignedBlock, BlockFetch},
+    AlignedBlockFromIterator, BlockStore, IndexedBlock,
 };
 
 /// An aligned block of booleans.
@@ -78,27 +79,22 @@ impl BlockStore for AlignedBitfield<u64> {
     }
 }
 
-impl AlignedBlockFromDefault for AlignedBitfield<usize> {
-    fn default_per_index(position: Self::Index, value: impl Fn(Self::Index) -> Self::Item) -> Self {
-        Self::from_iterator(position,&mut (0..Self::alignment()).map(value))
-    }
-}
-
 impl AlignedBlockFromIterator for AlignedBitfield<usize> {
     fn from_iterator<I>(position: Self::Index, iter: &mut I) -> Self
-    where I: Iterator<Item=Self::Item> {
+    where
+        I: Iterator<Item = Self::Item>,
+    {
         let mut bits: usize = 0;
 
         for i in 0..Self::alignment() {
-            if iter.next().expect("iterator should provide at least as many elements as there are bits in a 'usize'") {
+            if iter.next().expect(
+                "iterator should provide at least as many elements as there are bits in a 'usize'",
+            ) {
                 bits |= 0x01 << i;
             }
         }
 
-        AlignedBitfield {
-            position,
-            bits
-        }
+        AlignedBitfield { position, bits }
     }
 }
 

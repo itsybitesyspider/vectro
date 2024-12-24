@@ -18,12 +18,6 @@ pub trait AlignedBlock: IndexedBlock {
     fn position(&self) -> Self::Index;
 }
 
-/// A block where it is possible to construct a default value at a given position.s
-pub trait AlignedBlockFromDefault: AlignedBlock {
-    /// Construct a block of data with a default value and position.
-    fn default_per_index(position: Self::Index, value: impl Fn(Self::Index) -> Self::Item) -> Self;
-}
-
 /// Construct default values for a given item at a given index.
 pub trait DefaultPerIndex<Index, Item> {
     /// Determine the default value at the given index.
@@ -43,18 +37,23 @@ pub trait BlockStore: IndexedBlock {
 }
 
 /// Aligned block that can be constructed from the leading elements of an iterator.
-pub trait AlignedBlockFromIterator : AlignedBlock + Sized {
+pub trait AlignedBlockFromIterator: AlignedBlock + Sized {
     /// Construct an AlignedBlock from a function that takes an index and returns a value.
     fn from_function(position: Self::Index, value: impl Fn(Self::Index) -> Self::Item) -> Self
-    where Self::Index: NumericalIndex
+    where
+        Self::Index: NumericalIndex,
     {
-        Self::from_iterator(position,&mut (position.range(Self::alignment())).map(value))
+        Self::from_iterator(
+            position,
+            &mut (position.range(Self::alignment())).map(value),
+        )
     }
 
     /// Consume as many items from the iterator as needed to construct a new AlignedBlock.
     /// If there are not enough items in the iterator to construct the entire block, panic.
     fn from_iterator<I>(position: Self::Index, iter: &mut I) -> Self
-    where I: Iterator<Item=Self::Item>;
+    where
+        I: Iterator<Item = Self::Item>;
 }
 
 /// Initialize an AlignedBlock using its Default impl.

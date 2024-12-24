@@ -9,7 +9,7 @@ pub trait NumericalIndex: Copy + Eq + Ord {
     /// Get the beginning of the index's block, given an alignment.
     fn block(self, alignment: Self) -> Self;
     /// Range from the beginning of a block over it's length
-    fn range(self, alignment: Self) -> impl Iterator<Item=Self>;
+    fn range(self, alignment: Self) -> impl Iterator<Item = Self>;
 }
 
 impl NumericalIndex for usize {
@@ -29,8 +29,8 @@ impl NumericalIndex for usize {
         (self / alignment) * alignment
     }
 
-    fn range(self, alignment: Self) -> impl Iterator<Item=Self> {
-        self..self+alignment
+    fn range(self, alignment: Self) -> impl Iterator<Item = Self> {
+        self..self + alignment
     }
 }
 
@@ -51,8 +51,8 @@ impl NumericalIndex for u64 {
         (self / alignment) * alignment
     }
 
-    fn range(self, alignment: Self) -> impl Iterator<Item=Self> {
-        self..self+alignment
+    fn range(self, alignment: Self) -> impl Iterator<Item = Self> {
+        self..self + alignment
     }
 }
 
@@ -73,8 +73,8 @@ impl NumericalIndex for u128 {
         (self / alignment) * alignment
     }
 
-    fn range(self, alignment: Self) -> impl Iterator<Item=Self> {
-        self..self+alignment
+    fn range(self, alignment: Self) -> impl Iterator<Item = Self> {
+        self..self + alignment
     }
 }
 
@@ -95,8 +95,8 @@ impl NumericalIndex for u32 {
         (self / alignment) * alignment
     }
 
-    fn range(self, alignment: Self) -> impl Iterator<Item=Self> {
-        self..self+alignment
+    fn range(self, alignment: Self) -> impl Iterator<Item = Self> {
+        self..self + alignment
     }
 }
 
@@ -117,8 +117,8 @@ impl NumericalIndex for u16 {
         (self / alignment) * alignment
     }
 
-    fn range(self, alignment: Self) -> impl Iterator<Item=Self> {
-        self..self+alignment
+    fn range(self, alignment: Self) -> impl Iterator<Item = Self> {
+        self..self + alignment
     }
 }
 
@@ -139,7 +139,7 @@ impl NumericalIndex for u8 {
         (self / alignment) * alignment
     }
 
-    fn range(self, alignment: Self) -> impl Iterator<Item=Self> {
-        self..self+alignment
+    fn range(self, alignment: Self) -> impl Iterator<Item = Self> {
+        self..self + alignment
     }
 }

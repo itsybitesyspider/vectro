@@ -1,6 +1,6 @@
 use std::ops::{Index, IndexMut};
 
-use super::{AlignedBlock, AlignedBlockFromDefault, AlignedBlockFromIterator, BlockFetch, BlockStore, IndexedBlock};
+use super::{AlignedBlock, AlignedBlockFromIterator, BlockFetch, BlockStore, IndexedBlock};
 
 /// A vector as an AlignedBlock.s
 pub struct AlignedVec<T, const N: usize> {
@@ -20,17 +20,6 @@ impl<T, const N: usize> AlignedBlock for AlignedVec<T, N> {
 
     fn position(&self) -> Self::Index {
         self.position
-    }
-}
-
-impl<T, const N: usize> AlignedBlockFromDefault for AlignedVec<T, N> {
-    fn default_per_index(position: Self::Index, default: impl Fn(usize) -> Self::Item) -> Self {
-        Self::new_from(
-            position,
-            (position..position + Self::alignment())
-                .map(default)
-                .collect(),
-        )
     }
 }
 
@@ -92,10 +81,15 @@ impl<T, const N: usize> IndexMut<usize> for AlignedVec<T, N> {
 
 impl<T, const N: usize> AlignedBlockFromIterator for AlignedVec<T, N> {
     fn from_iterator<I>(position: Self::Index, iter: &mut I) -> Self
-    where I: Iterator<Item=Self::Item> {
+    where
+        I: Iterator<Item = Self::Item>,
+    {
         let mut vec = Vec::with_capacity(Self::alignment());
         for _ in 0..Self::alignment() {
-            vec.push(iter.next().expect("iterator to contain at least as many elements as Self::alignment()"));
+            vec.push(
+                iter.next()
+                    .expect("iterator to contain at least as many elements as Self::alignment()"),
+            );
         }
         Self::new_from(position, vec)
     }

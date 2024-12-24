@@ -1,6 +1,8 @@
 use crate::numerical_index::NumericalIndex;
 
-use super::{AlignedBlock, DefaultPerIndex, BlockFetch, BlockStore, IndexedBlock, AlignedBlockFromDefault};
+use super::{
+    AlignedBlock, AlignedBlockFromIterator, BlockFetch, BlockStore, DefaultPerIndex, IndexedBlock,
+};
 
 /// A vector of items that are themselves AlignedBlocks.
 pub struct SparseVec<T: IndexedBlock, D: DefaultPerIndex<T::Index, T::Item>> {
@@ -14,8 +16,15 @@ where
     D: DefaultPerIndex<T::Index, T::Item>,
     T::Index: NumericalIndex,
 {
+    /// Construct a new SparseVec with the default value.
+    pub fn new(default_value: D) -> Self {
+        SparseVec {
+            default_value,
+            vec: vec![],
+        }
+    }
+
     /// Construct a new SparseVec from an existing Vec.
-    /// This is a fast operation.
     pub fn new_from(default_value: D, vec: Vec<T>) -> Self {
         SparseVec { default_value, vec }.assert_well_formed()
     }
@@ -78,8 +87,8 @@ where
 
     fn ensure_index_exists(&mut self, index: T::Index) -> usize
     where
-        T: AlignedBlockFromDefault,
-        T::Item: Default,
+        T: AlignedBlockFromIterator,
+        D: DefaultPerIndex<T::Index, T::Item>,
         T::Index: NumericalIndex,
     {
         let index = index.block(T::alignment());
@@ -89,7 +98,7 @@ where
             Err(does_not_exist) => {
                 self.vec.insert(
                     does_not_exist,
-                    T::default_per_index(index, |_| T::Item::default()),
+                    T::from_function(index, |i| self.default_value.default_at_index(i)),
                 );
                 does_not_exist
             }
@@ -125,9 +134,8 @@ where
 
 impl<T, D> BlockStore for SparseVec<T, D>
 where
-    T: AlignedBlock + BlockStore + AlignedBlockFromDefault,
+    T: AlignedBlock + BlockStore + AlignedBlockFromIterator,
     T::Index: NumericalIndex,
-    T::Item: Default,
     D: DefaultPerIndex<T::Index, T::Item>,
 {
     fn store(&mut self, index: Self::Index, item: Self::Item) {

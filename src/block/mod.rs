@@ -1,6 +1,6 @@
-mod arc_block;
 mod aligned_block;
 mod aligned_vec;
+mod arc_block;
 mod bitfield;
 mod dense_vec;
 mod singleton;
