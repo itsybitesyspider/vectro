@@ -1,4 +1,4 @@
-use super::{AlignedBlock, BlockFetch, BlockStore, DefaultPerIndex, IndexedBlock};
+use super::{AlignedBlock, BlockFetch, BlockFetchIterator, BlockStore, DefaultPerIndex, IndexedBlock};
 
 /// A vector of items that are themselves AlignedBlocks.
 pub struct DenseVec<T> {
@@ -50,6 +50,13 @@ where
     pub fn pop_block(mut self) -> (Self, Option<T>) {
         let result = self.vec.pop();
         (self, result)
+    }
+
+    /// Iterator over all elements of this DenseVec
+    pub fn iter<'a>(&'a self) -> impl Iterator<Item=T::Item> + 'a
+    where T: AlignedBlock + BlockFetch
+    {
+        self.vec.iter().flat_map(|b| BlockFetchIterator::new(b))
     }
 }
 

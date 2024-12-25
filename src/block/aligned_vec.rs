@@ -44,6 +44,17 @@ impl<T, const N: usize> AlignedVec<T, N> {
         assert!(index < Self::alignment());
         index
     }
+
+    /// Iterator over this AlignedVec.
+    pub fn iter(&self) -> impl Iterator<Item=&T>
+    {
+        self.vec.iter()
+    }
+
+    /// Mutable iterator over this AlignedVec
+    pub fn iter_mut(&mut self) -> impl Iterator<Item=&mut T> {
+        self.vec.iter_mut()
+    }
 }
 
 impl<T, const N: usize> BlockFetch for AlignedVec<T, N>

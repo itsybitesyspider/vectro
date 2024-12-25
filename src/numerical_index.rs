@@ -8,7 +8,10 @@ pub trait NumericalIndex: Copy + Eq + Ord {
     fn divide(self, divisor: Self) -> Self;
     /// Get the beginning of the index's block, given an alignment.
     fn block(self, alignment: Self) -> Self;
+    /// Next index after this one
+    fn next(self) -> Self;
     /// Range from the beginning of a block over it's length
+    /// TODO: might go away with the block/next technique (start=block, next=next, until initial block != current block)
     fn range(self, alignment: Self) -> impl Iterator<Item = Self>;
 }
 
@@ -32,6 +35,10 @@ impl NumericalIndex for usize {
     fn range(self, alignment: Self) -> impl Iterator<Item = Self> {
         self..self + alignment
     }
+
+    fn next(self) -> Self {
+        self + 1
+    }
 }
 
 impl NumericalIndex for u64 {
@@ -53,6 +60,10 @@ impl NumericalIndex for u64 {
 
     fn range(self, alignment: Self) -> impl Iterator<Item = Self> {
         self..self + alignment
+    }
+
+    fn next(self) -> Self {
+        self + 1
     }
 }
 
@@ -76,6 +87,10 @@ impl NumericalIndex for u128 {
     fn range(self, alignment: Self) -> impl Iterator<Item = Self> {
         self..self + alignment
     }
+
+    fn next(self) -> Self {
+        self + 1
+    }
 }
 
 impl NumericalIndex for u32 {
@@ -97,6 +112,10 @@ impl NumericalIndex for u32 {
 
     fn range(self, alignment: Self) -> impl Iterator<Item = Self> {
         self..self + alignment
+    }
+
+    fn next(self) -> Self {
+        self + 1
     }
 }
 
@@ -120,6 +139,10 @@ impl NumericalIndex for u16 {
     fn range(self, alignment: Self) -> impl Iterator<Item = Self> {
         self..self + alignment
     }
+
+    fn next(self) -> Self {
+        self + 1
+    }
 }
 
 impl NumericalIndex for u8 {
@@ -141,5 +164,9 @@ impl NumericalIndex for u8 {
 
     fn range(self, alignment: Self) -> impl Iterator<Item = Self> {
         self..self + alignment
+    }
+
+    fn next(self) -> Self {
+        self + 1
     }
 }
