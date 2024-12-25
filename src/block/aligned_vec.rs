@@ -46,13 +46,12 @@ impl<T, const N: usize> AlignedVec<T, N> {
     }
 
     /// Iterator over this AlignedVec.
-    pub fn iter(&self) -> impl Iterator<Item=&T>
-    {
+    pub fn iter(&self) -> impl Iterator<Item = &T> {
         self.vec.iter()
     }
 
     /// Mutable iterator over this AlignedVec
-    pub fn iter_mut(&mut self) -> impl Iterator<Item=&mut T> {
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {
         self.vec.iter_mut()
     }
 }

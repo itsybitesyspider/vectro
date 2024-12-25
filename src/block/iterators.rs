@@ -5,16 +5,18 @@ use crate::numerical_index::NumericalIndex;
 use super::{AlignedBlock, BlockFetch};
 
 /// An iterator over the indices of an AlignedBlock (not values).
-pub struct BlockIndexIterator<B> 
-where B: AlignedBlock
+pub struct BlockIndexIterator<B>
+where
+    B: AlignedBlock,
 {
     start_index: B::Index,
     next_index: B::Index,
 }
 
 impl<B> Iterator for BlockIndexIterator<B>
-where B: AlignedBlock,
-B::Index : NumericalIndex
+where
+    B: AlignedBlock,
+    B::Index: NumericalIndex,
 {
     type Item = B::Index;
 
@@ -26,12 +28,12 @@ B::Index : NumericalIndex
         } else {
             None
         }
-
     }
 }
 
 impl<B> BlockIndexIterator<B>
-where B: AlignedBlock
+where
+    B: AlignedBlock,
 {
     /// Make a new BlockIterator for a block
     pub fn new<'a>(block: &'a B) -> Self {
@@ -43,16 +45,18 @@ where B: AlignedBlock
 }
 
 /// An iterator over a BlockFetch.
-pub struct BlockFetchIterator<'b, B> 
-where B: AlignedBlock
+pub struct BlockFetchIterator<'b, B>
+where
+    B: AlignedBlock,
 {
     iter: BlockIndexIterator<B>,
     block: &'b B,
 }
 
 impl<'b, B> Iterator for BlockFetchIterator<'b, B>
-where B: AlignedBlock + BlockFetch,
-B::Index : NumericalIndex
+where
+    B: AlignedBlock + BlockFetch,
+    B::Index: NumericalIndex,
 {
     type Item = B::Item;
 
@@ -61,8 +65,9 @@ B::Index : NumericalIndex
     }
 }
 
-impl<'b,B> BlockFetchIterator<'b,B>
-where B: AlignedBlock
+impl<'b, B> BlockFetchIterator<'b, B>
+where
+    B: AlignedBlock,
 {
     /// Make a new BlockIterator for a block
     pub fn new(block: &'b B) -> Self {
@@ -74,16 +79,18 @@ where B: AlignedBlock
 }
 
 /// An iterator over an AlignedBlock that is also Index.
-pub struct BlockRefIterator<'b, B> 
-where B: AlignedBlock + Index<B::Index,Output=B::Item>
+pub struct BlockRefIterator<'b, B>
+where
+    B: AlignedBlock + Index<B::Index, Output = B::Item>,
 {
     iter: BlockIndexIterator<B>,
     block: &'b B,
 }
 
 impl<'b, B> Iterator for BlockRefIterator<'b, B>
-where B: AlignedBlock + Index<B::Index,Output=B::Item>,
-B::Index : NumericalIndex
+where
+    B: AlignedBlock + Index<B::Index, Output = B::Item>,
+    B::Index: NumericalIndex,
 {
     type Item = &'b B::Item;
 
@@ -92,8 +99,9 @@ B::Index : NumericalIndex
     }
 }
 
-impl<'b,B> BlockRefIterator<'b,B>
-where B: AlignedBlock + Index<B::Index,Output=B::Item>,
+impl<'b, B> BlockRefIterator<'b, B>
+where
+    B: AlignedBlock + Index<B::Index, Output = B::Item>,
 {
     /// Make a new BlockIterator for a block
     pub fn new(block: &'b B) -> Self {
