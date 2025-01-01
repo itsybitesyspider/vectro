@@ -31,7 +31,22 @@ impl IndexedBlock for AlignedBitfield<u64> {
 
 impl AlignedBlock for AlignedBitfield<u64> {
     fn alignment() -> Self::Index {
-        8 * std::mem::size_of::<Self::Index>() as u64
+        8 * std::mem::size_of::<Self::Index>() as Self::Index
+    }
+
+    fn position(&self) -> Self::Index {
+        self.position
+    }
+}
+
+impl IndexedBlock for AlignedBitfield<u128> {
+    type Index = u128;
+    type Item = bool;
+}
+
+impl AlignedBlock for AlignedBitfield<u128> {
+    fn alignment() -> Self::Index {
+        8 * std::mem::size_of::<Self::Index>() as Self::Index
     }
 
     fn position(&self) -> Self::Index {
@@ -48,6 +63,14 @@ impl BlockFetch for AlignedBitfield<usize> {
 }
 
 impl BlockFetch for AlignedBitfield<u64> {
+    fn fetch(&self, index: Self::Index) -> bool {
+        let index = index - self.position;
+        assert!(index < Self::alignment());
+        (self.bits >> index) & 0x01 != 0
+    }
+}
+
+impl BlockFetch for AlignedBitfield<u128> {
     fn fetch(&self, index: Self::Index) -> bool {
         let index = index - self.position;
         assert!(index < Self::alignment());
@@ -79,16 +102,66 @@ impl BlockStore for AlignedBitfield<u64> {
     }
 }
 
+impl BlockStore for AlignedBitfield<u128> {
+    fn store(&mut self, index: Self::Index, item: Self::Item) {
+        let index = index - self.position;
+        assert!(index < 8 * std::mem::size_of::<Self::Index>() as Self::Index);
+        if item {
+            self.bits = self.bits | 0x01 << index;
+        } else {
+            self.bits = self.bits & !(0x01 << index);
+        }
+    }
+}
+
 impl AlignedBlockFromIterator for AlignedBitfield<usize> {
     fn from_iterator<I>(position: Self::Index, iter: &mut I) -> Self
     where
         I: Iterator<Item = Self::Item>,
     {
-        let mut bits: usize = 0;
+        let mut bits: Self::Index = 0;
 
         for i in 0..Self::alignment() {
             if iter.next().expect(
                 "iterator should provide at least as many elements as there are bits in a 'usize'",
+            ) {
+                bits |= 0x01 << i;
+            }
+        }
+
+        AlignedBitfield { position, bits }
+    }
+}
+
+impl AlignedBlockFromIterator for AlignedBitfield<u64> {
+    fn from_iterator<I>(position: Self::Index, iter: &mut I) -> Self
+    where
+        I: Iterator<Item = Self::Item>,
+    {
+        let mut bits: Self::Index = 0;
+
+        for i in 0..Self::alignment() {
+            if iter.next().expect(
+                "iterator should provide at least as many elements as there are bits in a 'u64'",
+            ) {
+                bits |= 0x01 << i;
+            }
+        }
+
+        AlignedBitfield { position, bits }
+    }
+}
+
+impl AlignedBlockFromIterator for AlignedBitfield<u128> {
+    fn from_iterator<I>(position: Self::Index, iter: &mut I) -> Self
+    where
+        I: Iterator<Item = Self::Item>,
+    {
+        let mut bits: Self::Index = 0;
+
+        for i in 0..Self::alignment() {
+            if iter.next().expect(
+                "iterator should provide at least as many elements as there are bits in a 'u128'",
             ) {
                 bits |= 0x01 << i;
             }

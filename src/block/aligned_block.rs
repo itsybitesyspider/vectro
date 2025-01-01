@@ -57,6 +57,7 @@ pub trait AlignedBlockFromIterator: AlignedBlock + Sized {
 }
 
 /// Initialize an AlignedBlock using its Default impl.
+#[derive(Default)]
 pub struct DefaultValue;
 
 impl<Index, Item: Default> DefaultPerIndex<Index, Item> for DefaultValue {

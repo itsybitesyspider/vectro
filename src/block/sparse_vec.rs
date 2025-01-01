@@ -5,16 +5,21 @@ use super::{
 };
 
 /// A vector of items that are themselves AlignedBlocks.
-pub struct SparseVec<T: IndexedBlock, D: DefaultPerIndex<T::Index, T::Item>> {
+pub struct SparseVec<T, D> {
     default_value: D,
     vec: Vec<T>,
 }
 
+impl<T,D> Default for SparseVec<T,D>
+where 
+D: Default
+{
+    fn default() -> Self {
+        Self::new(D::default())
+    }
+}
+
 impl<T, D> SparseVec<T, D>
-where
-    T: AlignedBlock,
-    D: DefaultPerIndex<T::Index, T::Item>,
-    T::Index: NumericalIndex,
 {
     /// Construct a new SparseVec with the default value.
     pub fn new(default_value: D) -> Self {
@@ -23,17 +28,24 @@ where
             vec: vec![],
         }
     }
+}
 
-    /// Construct a new SparseVec from an existing Vec.
-    pub fn new_from(default_value: D, vec: Vec<T>) -> Self {
-        SparseVec { default_value, vec }.assert_well_formed()
-    }
-
-    /// Unwrap a SparseVec back into a Vec.
-    /// This is a fast operation.
-    pub fn into_vec(self) -> Vec<T> {
-        self.vec
-    }
+impl<T, D> SparseVec<T, D>
+where
+    T: AlignedBlock,
+    D: DefaultPerIndex<T::Index, T::Item>,
+    T::Index: NumericalIndex,
+{
+        /// Construct a new SparseVec from an existing Vec.
+        pub fn new_from(default_value: D, vec: Vec<T>) -> Self {
+            SparseVec { default_value, vec }.assert_well_formed()
+        }
+    
+        /// Unwrap a SparseVec back into a Vec.
+        /// This is a fast operation.
+        pub fn into_vec(self) -> Vec<T> {
+            self.vec
+        }
 
     /// Validate that a SparseVec is well-formed.
     /// Each block of the SparseVec must be aligned, uniquely-positioned, and in sorted order by position.

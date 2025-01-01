@@ -8,6 +8,8 @@
 
 //! Very large collections.
 
+/// Bitsets
+pub mod bitset;
 /// Utilities for working with blocks of data.
 pub mod block;
 /// Index types
